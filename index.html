@@ -76,6 +76,26 @@
   };
 
   L.control.layers(baseMaps).addTo(map);
+
+// === Load & hiển thị file GeoJSON ===
+fetch('polygon.geojson')  // hoặc đường dẫn đúng trên GitHub Pages
+  .then(response => response.json())
+  .then(data => {
+    L.geoJSON(data, {
+      style: {
+        color: 'blue',
+        weight: 2,
+        fillColor: 'cyan',
+        fillOpacity: 0.4
+      },
+      onEachFeature: function (feature, layer) {
+        if (feature.properties && feature.properties.name) {
+          layer.bindPopup("<b>" + feature.properties.name + "</b><br>" + feature.properties.info);
+        }
+      }
+    }).addTo(map);
+  });
+
 </script>
 
 </body>

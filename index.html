@@ -28,52 +28,54 @@
 <script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
 <script>
-  // Khởi tạo bản đồ và đặt vị trí trung tâm (tọa độ Việt Nam)
+  // Khởi tạo bản đồ
   var map = L.map('map').setView([14.0583, 108.2772], 6);
 
-  // Các lớp nền
+  // Các layer nền
+  var googleHybrid = L.tileLayer('http://{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+    maxZoom: 20,
+    subdomains: ['mt0','mt1','mt2','mt3'],
+    attribution: '© Google Maps'
+  });
+
+  var googleSatellite = L.tileLayer('http://{s}.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    maxZoom: 20,
+    subdomains: ['mt0','mt1','mt2','mt3'],
+    attribution: '© Google Satellite'
+  });
+
+  var googleTerrain = L.tileLayer('http://{s}.google.com/vt/lyrs=p&x={x}&y={y}&z={z}', {
+    maxZoom: 20,
+    subdomains: ['mt0','mt1','mt2','mt3'],
+    attribution: '© Google Terrain'
+  });
+
   var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
     maxZoom: 19,
     attribution: '© OpenStreetMap contributors'
   });
 
-  var satellite = L.tileLayer('http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-    maxZoom: 20,
-    attribution: 'Map data ©2024 Google'
-  });
+  // Thêm mặc định là Google Hybrid
+  googleHybrid.addTo(map);
 
-  var hybrid = L.tileLayer('http://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
-    maxZoom: 20,
-    attribution: 'Map data ©2024 Google'
-  });
+  // Thêm Marker ví dụ
+  var marker = L.marker([20.9884, 105.7958]).addTo(map);
+  marker.bindPopup("<b>Hà Nội</b><br>Hanoi university").openPopup();
 
-  var dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
-    maxZoom: 19,
-    attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
-  });
+  // Tìm kiếm địa điểm
+  L.Control.geocoder({
+    defaultMarkGeocode: true
+  }).addTo(map);
 
-  // Thêm lớp nền mặc định vào bản đồ (Google Hybrid)
-  hybrid.addTo(map);
-
-  // Thêm chức năng chọn lớp nền
+  // Tạo control chuyển đổi layer nền
   var baseMaps = {
-    "Google Hybrid": hybrid,
-    "Google Satellite": satellite,
-    "OpenStreetMap": osm,
-    "Dark Mode": dark
+    "🛰️ Google Hybrid": googleHybrid,
+    "🌍 OpenStreetMap": osm,
+    "🗺️ Google Satellite": googleSatellite,
+    "⛰️ Google Terrain": googleTerrain
   };
 
   L.control.layers(baseMaps).addTo(map);
-
-  // Thêm chức năng tìm kiếm (Geocoder)
-  L.Control.geocoder({
-    defaultMarkGeocode: true,
-    position: 'topright'
-  }).addTo(map);
-
-  // Thêm 1 marker (ví dụ tại Hà Nội)
-  var marker = L.marker([20.9891582, 105.7930768]).addTo(map);
-  marker.bindPopup("<b>Hanu</b><br>Hanoi University").openPopup();
 </script>
 
 </body>

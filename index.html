@@ -33,13 +33,16 @@
   maxZoom: 20
   }).addTo(map);
 
+   // Thêm chức năng tìm kiếm (Geocoder)
+  L.Control.geocoder({
+    defaultMarkGeocode: true,
+    position: 'topright'
+  }).addTo(map);
+  
   // Thêm 1 marker (ví dụ tại Hà Nội)
   var marker = L.marker([20.9891582,105.7930768,17]).addTo(map);
   marker.bindPopup("<b>Hanu</b><br>Nơi deadlines hội tụ").openPopup();
-  // Thêm chức năng tìm kiếm địa điểm
-  L.Control.geocoder({
-    defaultMarkGeocode: true
-  }).addTo(map);
+  
 </script>
 </script>
 

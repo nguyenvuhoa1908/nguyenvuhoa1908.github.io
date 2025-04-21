@@ -28,13 +28,13 @@
   var map = L.map('map').setView([14.0583, 108.2772], 6);
 
   // Thêm lớp nền từ OpenStreetMap
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    maxZoom: 19,
-    attribution: '© OpenStreetMap contributors'
+  L.tileLayer('http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+  attribution: 'Map data ©2024 Google',
+  maxZoom: 20
   }).addTo(map);
 
   // Thêm 1 marker (ví dụ tại Hà Nội)
-  var marker = L.marker([20.9891582,105.7930768,17z]).addTo(map);
+  var marker = L.marker([20.9891582,105.7930768,17]).addTo(map);
   marker.bindPopup("<b>Hanu</b><br>Nơi deadlines hội tụ").openPopup();
 </script>
 

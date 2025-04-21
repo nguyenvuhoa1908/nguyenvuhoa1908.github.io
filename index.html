@@ -42,18 +42,24 @@
     attribution: 'Map data ©2024 Google'
   });
 
+  var hybrid = L.tileLayer('http://mt1.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+    maxZoom: 20,
+    attribution: 'Map data ©2024 Google'
+  });
+
   var dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
     maxZoom: 19,
     attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
   });
 
-  // Thêm lớp nền mặc định vào bản đồ
-  osm.addTo(map);
+  // Thêm lớp nền mặc định vào bản đồ (Google Hybrid)
+  hybrid.addTo(map);
 
   // Thêm chức năng chọn lớp nền
   var baseMaps = {
-    "Street Map (OSM)": osm,
-    "Satellite (Google)": satellite,
+    "Google Hybrid": hybrid,
+    "Google Satellite": satellite,
+    "OpenStreetMap": osm,
     "Dark Mode": dark
   };
 
@@ -66,7 +72,7 @@
   }).addTo(map);
 
   // Thêm 1 marker (ví dụ tại Hà Nội)
-  var marker = L.marker([20.9891582,105.7930768,17]).addTo(map);
+  var marker = L.marker([20.9891582, 105.7930768]).addTo(map);
   marker.bindPopup("<b>Hanu</b><br>Hanoi University").openPopup();
 </script>
 

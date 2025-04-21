@@ -1,12 +1,14 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>WebGIS của Vũ Hòa</title>
+  <title>WebGIS cơ bản với Leaflet</title>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+  <!-- Leaflet Control Geocoder CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.css" />
 
   <style>
     #map {
@@ -17,26 +19,55 @@
 </head>
 <body>
 
-<h3 style="text-align:center;">WebGIS của Vũ Hòa đang làm.js</h3>
+<h3 style="text-align:center;">WebGIS cơ bản với thầy nhưng khum cơ bản với tuii.js</h3>
 <div id="map"></div>
 
 <!-- Leaflet JS -->
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+<!-- Leaflet Control Geocoder JS -->
+<script src="https://unpkg.com/leaflet-control-geocoder/dist/Control.Geocoder.js"></script>
 
 <script>
   // Khởi tạo bản đồ và đặt vị trí trung tâm (tọa độ Việt Nam)
   var map = L.map('map').setView([14.0583, 108.2772], 6);
 
-  // Thêm lớp nền từ OpenStreetMap
-  L.tileLayer('http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
-  attribution: 'Map data ©2024 Google',
-  maxZoom: 20
+  // Các lớp nền
+  var osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    maxZoom: 19,
+    attribution: '© OpenStreetMap contributors'
+  });
+
+  var satellite = L.tileLayer('http://mt1.google.com/vt/lyrs=s&x={x}&y={y}&z={z}', {
+    maxZoom: 20,
+    attribution: 'Map data ©2024 Google'
+  });
+
+  var dark = L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+    maxZoom: 19,
+    attribution: '&copy; <a href="https://carto.com/">CARTO</a>'
+  });
+
+  // Thêm lớp nền mặc định vào bản đồ
+  osm.addTo(map);
+
+  // Thêm chức năng chọn lớp nền
+  var baseMaps = {
+    "Street Map (OSM)": osm,
+    "Satellite (Google)": satellite,
+    "Dark Mode": dark
+  };
+
+  L.control.layers(baseMaps).addTo(map);
+
+  // Thêm chức năng tìm kiếm (Geocoder)
+  L.Control.geocoder({
+    defaultMarkGeocode: true,
+    position: 'topright'
   }).addTo(map);
 
   // Thêm 1 marker (ví dụ tại Hà Nội)
   var marker = L.marker([20.9891582,105.7930768,17]).addTo(map);
-  marker.bindPopup("<b>Hanu</b><br>Nơi deadlines hội tụ").openPopup();
-</script>
+  marker.bindPopup("<b>Hanu</b><br>Hanoi University").openPopup();
 </script>
 
 </body>

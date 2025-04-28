@@ -1,201 +1,114 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>WebGIS Q2 midterm2 of 2106080057. Study area: Tuy Phong, Binh Thuan</title>
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
-    <style>
-        body, html { margin: 0; padding: 0; height: 100%; }
-        #map { width: 100%; height: 100vh; }
-        #controls {
-            position: absolute;
-            top: 10px;
-            left: 10px;
-            z-index: 1000;
-            background: white;
-            padding: 10px;
-            border-radius: 4px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
-        #legend {
-            position: absolute;
-            top: 70px;
-            right: 10px;
-            z-index: 1000;
-            background: white;
-            padding: 8px;
-            font-size: 14px;
-            border-radius: 4px;
-            box-shadow: 0 0 5px rgba(0,0,0,0.5);
-        }
-        .feature-label {
-            font-size: 12px;
-            font-weight: bold;
-            color: #000;
-            text-shadow: 1px 1px 2px #fff;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <title>WebGIS Q2 midterm2 of 2106080057. Study area: Tuy Phong, Binh Thuan</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    body, html { margin:0; padding:0; height:100%; }
+    #map { width:100%; height:100vh; }
+    /* Title trên bản đồ */
+    #title {
+      position:absolute; top:10px; left:50%;
+      transform:translateX(-50%);
+      background:rgba(255,255,255,0.8);
+      padding:4px 8px; font-weight:bold; z-index:1000;
+      font-size:16px;
+    }
+    /* Legend */
+    #legend {
+      position:absolute; top:60px; right:10px;
+      background:white; padding:8px; font-size:14px;
+      border-radius:4px; box-shadow:0 0 5px rgba(0,0,0,0.3);
+      z-index:1000;
+    }
+    #legend i {
+      width:18px; height:10px; display:inline-block; margin-right:5px;
+    }
+    /* Nhãn xã */
+    .feature-label {
+      font-size:12px; font-weight:bold;
+      color:#000; text-shadow:1px 1px 2px #fff;
+    }
+  </style>
 </head>
 <body>
 
-<div id="controls">
-    <input type="file" id="fileInput" accept=".geojson" />
-    <br><br>
-    <label for="attributeSelect">Attribute for fill:</label>
-    <select id="attributeSelect" disabled></select>
-    <br><br>
-    <label for="labelSelect">Attribute for label:</label>
-    <select id="labelSelect" disabled></select>
+<div id="map"></div>
+<div id="title">WebGIS Q2 midterm2 of 2106080057. Study area: Tuy Phong, Binh Thuan</div>
+<div id="legend"><b>Population density<br>(people/km²)</b><br>
+  <i style="background:#ffffcc"></i> 0–10<br>
+  <i style="background:#ffeda0"></i> 10–20<br>
+  <i style="background:#fed976"></i> 20–50<br>
+  <i style="background:#feb24c"></i> 50–100<br>
+  <i style="background:#fd8d3c"></i> 100–200<br>
+  <i style="background:#fc4e2a"></i> 200–500<br>
+  <i style="background:#e31a1c"></i> 500–1000<br>
+  <i style="background:#b10026"></i> 1000+<br>
 </div>
 
-<div id="map"></div>
-<div id="legend"><b>Population density legend</b><br><div id="legendContent"></div></div>
-
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
 <script>
-// initialize map centered on Tuy Phong, Binh Thuan
-var map = L.map('map').setView([11.25, 109.15], 11);
+// 1) Khởi tạo bản đồ Tuy Phong
+var map = L.map('map').setView([11.05, 108.25], 11);
 
-// background OSM
-var baseLayer = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+// 2) Nền OSM
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
+    attribution:'© OpenStreetMap contributors'
 }).addTo(map);
 
-var geojsonLayer;
-var labelLayer;
-var uploadedGeoJSON;
+var communesLayer, labelsLayer;
+var geojsonData;
 
-// load default GeoJSON for Tuy Phong
+// 3) Load GeoJSON TuyPhong_communes.geojson
 fetch('TuyPhong_communes.geojson')
   .then(response => response.json())
   .then(data => {
-    uploadedGeoJSON = data;
-    loadGeoJSON(data);
+    geojsonData = data;
+    drawCommunes();
+    drawLabels();
   });
 
-document.getElementById('fileInput').addEventListener('change', function(e) {
-    var file = e.target.files[0];
-    if (!file) return;
-    var reader = new FileReader();
-    reader.onload = function(e) {
-        var geojson = JSON.parse(e.target.result);
-        uploadedGeoJSON = geojson;
-        loadGeoJSON(geojson);
+function getColor(d) {
+    return d > 1000 ? '#b10026' :
+           d >  500 ? '#e31a1c' :
+           d >  200 ? '#fc4e2a' :
+           d >  100 ? '#fd8d3c' :
+           d >   50 ? '#feb24c' :
+           d >   20 ? '#fed976' :
+           d >   10 ? '#ffeda0' :
+                      '#ffffcc';
+}
+
+function styleFeature(feature) {
+    var d = parseFloat(feature.properties.pop_density);
+    return {
+      fillColor: getColor(d),
+      color: 'black',
+      weight: 1,
+      fillOpacity: 0.7
     };
-    reader.readAsText(file);
-});
+}
 
-function loadGeoJSON(geojson) {
-    if (geojsonLayer) map.removeLayer(geojsonLayer);
-    if (labelLayer) map.removeLayer(labelLayer);
-
-    geojsonLayer = L.geoJSON(geojson, {
-        style: {
-            color: 'black',
-            weight: 1,
-            fillOpacity: 0.5
-        },
+function drawCommunes() {
+    if (communesLayer) map.removeLayer(communesLayer);
+    communesLayer = L.geoJSON(geojsonData, {
+        style: styleFeature,
         onEachFeature: function (feature, layer) {
-            let popupContent = "";
-            for (const key in feature.properties) {
-                popupContent += `<b>${key}</b>: ${feature.properties[key]}<br>`;
-            }
+            var popupContent = `<b>${feature.properties.Commune_Name}</b><br>Population density: ${feature.properties.pop_density} people/km²`;
             layer.bindPopup(popupContent);
         }
     }).addTo(map);
-
-    map.fitBounds(geojsonLayer.getBounds());
-    updateAttributeSelectors(geojson);
+    map.fitBounds(communesLayer.getBounds());
 }
 
-function updateAttributeSelectors(geojson) {
-    var attributes = [];
-    if (geojson.features.length > 0) {
-        attributes = Object.keys(geojson.features[0].properties);
-    }
-
-    var attrSelect = document.getElementById('attributeSelect');
-    var labelSelect = document.getElementById('labelSelect');
-
-    attrSelect.innerHTML = '<option value="">--Select attribute--</option>';
-    labelSelect.innerHTML = '<option value="">--Select attribute--</option>';
-
-    attributes.forEach(attr => {
-        var option1 = document.createElement('option');
-        option1.value = attr;
-        option1.textContent = attr;
-        attrSelect.appendChild(option1);
-
-        var option2 = document.createElement('option');
-        option2.value = attr;
-        option2.textContent = attr;
-        labelSelect.appendChild(option2);
-    });
-
-    attrSelect.disabled = false;
-    labelSelect.disabled = false;
-
-    attrSelect.addEventListener('change', applyGraduatedSymbology);
-    labelSelect.addEventListener('change', applyLabeling);
-}
-
-function applyGraduatedSymbology() {
-    var selectedAttr = document.getElementById('attributeSelect').value;
-    if (!selectedAttr) return;
-
-    if (geojsonLayer) map.removeLayer(geojsonLayer);
-
-    var values = uploadedGeoJSON.features
-                  .map(f => parseFloat(f.properties[selectedAttr]))
-                  .filter(v => !isNaN(v));
-    var min = Math.min(...values);
-    var max = Math.max(...values);
-    var range = max - min;
-
-    function getColor(d) {
-        var pct = (d - min) / range;
-        return pct > 0.8 ? '#800026' :
-               pct > 0.6 ? '#BD0026' :
-               pct > 0.4 ? '#E31A1C' :
-               pct > 0.2 ? '#FC4E2A' :
-                           '#FD8D3C';
-    }
-
-    geojsonLayer = L.geoJSON(uploadedGeoJSON, {
-        style: function(feature) {
-            var value = parseFloat(feature.properties[selectedAttr]);
-            return {
-                fillColor: getColor(value),
-                color: 'black',
-                weight: 1,
-                fillOpacity: 0.7
-            };
-        },
-        onEachFeature: function (feature, layer) {
-            let popupContent = "";
-            for (const key in feature.properties) {
-                popupContent += `<b>${key}</b>: ${feature.properties[key]}<br>`;
-            }
-            layer.bindPopup(popupContent);
-        }
-    }).addTo(map);
-
-    map.fitBounds(geojsonLayer.getBounds());
-    updateLegend();
-}
-
-function applyLabeling() {
-    var selectedAttr = document.getElementById('labelSelect').value;
-    if (!selectedAttr) return;
-
-    if (labelLayer) map.removeLayer(labelLayer);
-
-    labelLayer = L.geoJSON(uploadedGeoJSON, {
+function drawLabels() {
+    if (labelsLayer) map.removeLayer(labelsLayer);
+    labelsLayer = L.geoJSON(geojsonData, {
         onEachFeature: function(feature, layer) {
-            var labelText = feature.properties[selectedAttr];
+            var labelText = feature.properties.Commune_Name;
             if (labelText) {
-                layer.bindTooltip(labelText.toString(), {
+                layer.bindTooltip(labelText, {
                     permanent: true,
                     direction: "center",
                     className: "feature-label"
@@ -203,17 +116,6 @@ function applyLabeling() {
             }
         }
     }).addTo(map);
-}
-
-function updateLegend() {
-    var legendContent = document.getElementById('legendContent');
-    legendContent.innerHTML = `
-        <i style="background:#800026;width:20px;height:10px;display:inline-block"></i> >80%<br>
-        <i style="background:#BD0026;width:20px;height:10px;display:inline-block"></i> 60%-80%<br>
-        <i style="background:#E31A1C;width:20px;height:10px;display:inline-block"></i> 40%-60%<br>
-        <i style="background:#FC4E2A;width:20px;height:10px;display:inline-block"></i> 20%-40%<br>
-        <i style="background:#FD8D3C;width:20px;height:10px;display:inline-block"></i> 0%-20%<br>
-    `;
 }
 </script>
 

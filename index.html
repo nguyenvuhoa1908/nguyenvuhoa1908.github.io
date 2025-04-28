@@ -7,15 +7,12 @@
   <style>
     body, html { margin:0; padding:0; height:100%; }
     #map { width:100%; height:100vh; }
-    /* Title trên bản đồ */
     #title {
       position:absolute; top:10px; left:50%;
       transform:translateX(-50%);
       background:rgba(255,255,255,0.8);
       padding:4px 8px; font-weight:bold; z-index:1000;
-      font-size:16px;
     }
-    /* Legend */
     #legend {
       position:absolute; top:60px; right:10px;
       background:white; padding:8px; font-size:14px;
@@ -25,7 +22,6 @@
     #legend i {
       width:18px; height:10px; display:inline-block; margin-right:5px;
     }
-    /* Nhãn xã */
     .feature-label {
       font-size:12px; font-weight:bold;
       color:#000; text-shadow:1px 1px 2px #fff;
@@ -49,10 +45,8 @@
 
 <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 <script>
-// 1) Khởi tạo bản đồ Tuy Phong
 var map = L.map('map').setView([11.05, 108.25], 11);
 
-// 2) Nền OSM
 L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
     attribution:'© OpenStreetMap contributors'
 }).addTo(map);
@@ -60,7 +54,6 @@ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{
 var communesLayer, labelsLayer;
 var geojsonData;
 
-// 3) Load GeoJSON TuyPhong_communes.geojson
 fetch('TuyPhong_communes.geojson')
   .then(response => response.json())
   .then(data => {
